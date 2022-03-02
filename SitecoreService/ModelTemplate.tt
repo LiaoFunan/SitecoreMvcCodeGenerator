@@ -1,0 +1,152 @@
+﻿<#@ template language="C#" #>
+<#@ assembly name="System.Core" #>
+<#@ import namespace="System.Linq" #>
+<#@ import namespace="System.Text" #>
+<#@ import namespace="System.Collections.Generic" #>
+<#@ import namespace="SitecoreService.CodeGenerator" #>
+using E.SunBank.Foundation.SitecoreUtils.Extensions;
+      <#    if(!string.IsNullOrEmpty(ChildClassName))
+       { #>
+using E.SunBank.Project.eFingo.Models.<#= ChildClassName #>;
+      <# } 
+    #>
+using Sitecore.Data;
+using Sitecore.Data.Items;
+using System.Collections.Generic;
+using System.Linq;
+
+namespace E.SunBank.Project.eFingo.Models.<#= ClassName #>
+{
+    /// <summary>
+    /// <#= DisplayName #>
+    /// </summary>
+    public class <#= ClassName #>Model
+    {
+        /// <summary>
+        /// DatasourceModel
+        /// </summary>
+        public <#= ClassName #>Item DatasourceItem { get; set; }
+        /// <summary>
+        /// 建構子
+        /// </summary>
+        /// <param name="datasourceItem"></param>
+        public <#= ClassName #>Model(<#= ClassName #>Item datasourceItem)
+        {
+            this.DatasourceItem = datasourceItem;
+        }
+    }
+
+    /// <summary>
+    /// <#= DisplayName #>
+    /// </summary>
+    public class <#= ClassName #>Item
+    {
+        /// <summary>
+        /// ItemID
+        /// </summary>
+         public string Guid { get; set; }
+
+    <# foreach (Item item in Items)
+       { #>
+    /// <summary>
+        /// <#= item.DisplayName #> 
+        /// </summary>
+        public string  <#= item.ItemName #> { get; set; }
+    <# } 
+    #>
+
+
+           <#    if(!string.IsNullOrEmpty(ChildDisplayName))
+       { #>
+        /// <summary>
+        /// <#= ChildDisplayName #> 
+        /// </summary>
+        public IEnumerable<<#= ChildClassName #>Item> <#= ChildClassName #>Items { get; set; }
+         <# } 
+    #>
+
+        /// <summary>
+        /// DatasourceItem本體
+        /// </summary>
+        public Item DataItem { get; set; }
+        /// <summary>
+        /// 建構子1
+        /// </summary>
+        /// <param name="item"></param>
+        public <#= ClassName #>Item(Item item)
+        {
+            <# foreach (Item item in Items)
+            {
+            if(item.Type == "Image")
+            {#>
+              this.<#= item.ItemName #> = item.ImageUrl(<#= ClassName #>Template.FieldIDList.<#= item.ItemName #>);
+             <# }
+                else if(item.Type == "Multi-Line Text")
+             { #>
+              this.<#= item.ItemName #> =  item.GetMultiLineText(<#= ClassName #>Template.FieldIDList.<#= item.ItemName #>, "<br>").ToHtmlString();
+             <#}
+               else if(item.Type == "Droplink")
+             { #>
+              Item linkItem = item?.TargetItem(<#= ClassName #>Template.FieldIDList.<#= item.ItemName #>);
+                if (linkItem != null)
+                {
+                    //此處需修改ID
+                    this.<#= item.ItemName #>  = linkItem[<#= ClassName #>Template.FieldIDList.<#= item.ItemName #>];
+                }
+             <#} 
+             else
+             { #>
+              this.<#= item.ItemName #> = item[<#= ClassName #>Template.FieldIDList.<#= item.ItemName #>];
+             <#} 
+            }#>
+
+
+                <#    if(!string.IsNullOrEmpty(ChildClassName))
+       { #>
+            this.<#= ChildClassName #>Items = item.GetChildren(<#= ClassName #>Template.FieldIDList.<#= ChildClassName #>ID).Select(j => new <#= ChildClassName #>Item(j)).ToList();
+             <# } 
+    #>
+
+            this.Guid = item.ID.ToString();
+            this.DataItem = item;
+        }
+    }
+
+    public class <#= ClassName #>Template
+    {
+        public class FieldIDList
+        {
+        <# foreach (Item item in Items)
+            { #>
+    /// <summary>
+            /// <#= item.DisplayName #> 
+            /// </summary>
+            public static readonly ID <#= item.ItemName #> = new ID("{<#= item.ItemID #>}");
+                           <#    if(!string.IsNullOrEmpty(ChildClassName))
+       { #>
+              /// <summary>
+            /// <#= ChildDisplayName #> 
+            /// </summary>
+            public static readonly ID <#= ChildClassName #>ID = new ID("{<#= ChildID #>}");
+             <# } 
+    #>\
+        <# } 
+        #>
+        }
+    }
+}
+
+
+
+
+
+
+
+<#+
+public List<Item> Items { get; set; }
+public string ClassName { get; set; }
+public string DisplayName { get; set; }
+public string ChildClassName { get; set; }
+public string ChildID { get; set; }
+public string ChildDisplayName { get; set; }
+#>
