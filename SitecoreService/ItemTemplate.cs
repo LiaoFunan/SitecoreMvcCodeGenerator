@@ -7,12 +7,12 @@
 //     程式碼，則會遺失變更。
 // </auto-generated>
 // ------------------------------------------------------------------------------
-namespace SitecoreService.CodeGenerator
+namespace SitecoreService.MvcCodeGenerator
 {
     using System.Linq;
     using System.Text;
     using System.Collections.Generic;
-    using SitecoreService.CodeGenerator;
+    using SitecoreService.MvcCodeGenerator;
     using System;
     
     /// <summary>

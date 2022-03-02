@@ -7,7 +7,7 @@ using System.Net;
 using System.Text;
 using Newtonsoft.Json;
 
-namespace SitecoreService.CodeGenerator
+namespace SitecoreService.MvcCodeGenerator
 {
     internal class Program
     {

@@ -7,7 +7,7 @@
     <ProjectGuid>{9318E1ED-F2EE-464E-9A86-A0543F2B9352}</ProjectGuid>
     <OutputType>Exe</OutputType>
     <RootNamespace>SitecoreService.CodeGenerator</RootNamespace>
-    <AssemblyName>CodeGenerator</AssemblyName>
+    <AssemblyName>MvcCodeGenerator</AssemblyName>
     <TargetFrameworkVersion>v4.8</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
