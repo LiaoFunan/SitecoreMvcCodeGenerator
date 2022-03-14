@@ -20,7 +20,7 @@ namespace E.SunBank.Project.eFingo.Models.<#= ClassName #>
         /// </summary>
          public string Guid { get; set; }
 
-    <# foreach (Item item in Items)
+    <# foreach (Item item in PropertyItems)
        { #>
     /// <summary>
         /// <#= item.DisplayName #> 
@@ -39,28 +39,27 @@ namespace E.SunBank.Project.eFingo.Models.<#= ClassName #>
         /// <param name="item"></param>
         public <#= ClassName #>Item(Item item)
         {
-            <# foreach (Item item in Items)
+            <# foreach (Item item in PropertyItems)
             {
             if(item.Type == "Image")
             {#>
-              this.<#= item.ItemName #> = item.ImageUrl(<#= ClassName #>Template.FieldIDList.<#= item.ItemName #>);
+              this.<#= item.ItemName #> = item.ImageUrl(<#= ClassName #>Template.<#= item.ItemName #>);
              <# }
                 else if(item.Type == "Multi-Line Text")
              { #>
-              this.<#= item.ItemName #> =  item.GetMultiLineText(<#= ClassName #>Template.FieldIDList.<#= item.ItemName #>, "<br>").ToHtmlString();
+              this.<#= item.ItemName #> =  item.GetMultiLineText(<#= ClassName #>Template.<#= item.ItemName #>, "<br>").ToHtmlString();
              <#}
                else if(item.Type == "Droplink")
              { #>
-              Item linkItem = item?.TargetItem(<#= ClassName #>Template.FieldIDList.<#= item.ItemName #>);
+              Item linkItem = item?.TargetItem(<#= ClassName #>Template.<#= item.ItemName #>);
                 if (linkItem != null)
                 {
-                    //此處需修改ID
-                    this.<#= item.ItemName #>  = linkItem[<#= ClassName #>Template.FieldIDList.<#= item.ItemName #>];
+                    this.<#= item.ItemName #>  = linkItem[<#= ClassName #>Template.<#= item.LinkItemName #>];
                 }
              <#} 
              else
              { #>
-              this.<#= item.ItemName #> = item[<#= ClassName #>Template.FieldIDList.<#= item.ItemName #>];
+              this.<#= item.ItemName #> = item[<#= ClassName #>Template.<#= item.ItemName #>];
              <#} 
             }#>
 
@@ -71,9 +70,7 @@ namespace E.SunBank.Project.eFingo.Models.<#= ClassName #>
 
     public class <#= ClassName #>Template
     {
-        public class FieldIDList
-        {
-        <# foreach (Item item in Items)
+        <# foreach (Item item in PropertyItems)
             { #>
             /// <summary>
             /// <#= item.DisplayName #> 
@@ -81,18 +78,11 @@ namespace E.SunBank.Project.eFingo.Models.<#= ClassName #>
             public static readonly ID <#= item.ItemName #> = new ID("{<#= item.ItemID #>}");
         <# } 
         #>
-        }
     }
 }
 
-
-
-
-
-
-
 <#+
-public List<Item> Items { get; set; }
+public List<Item> PropertyItems { get; set; }
 public string ClassName { get; set; }
 public string DisplayName { get; set; }
 #>

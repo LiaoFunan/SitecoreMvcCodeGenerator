@@ -5,11 +5,9 @@
 <#@ import namespace="System.Collections.Generic" #>
 <#@ import namespace="SitecoreService.MvcCodeGenerator" #>
 using E.SunBank.Foundation.SitecoreUtils.Extensions;
-      <#    if(!string.IsNullOrEmpty(ChildClassName))
-       { #>
+<#    if(!string.IsNullOrEmpty(ChildClassName)) { #>
 using E.SunBank.Project.eFingo.Models.<#= ChildClassName #>;
-      <# } 
-    #>
+<#    } #>
 using Sitecore.Data;
 using Sitecore.Data.Items;
 using System.Collections.Generic;
@@ -46,24 +44,27 @@ namespace E.SunBank.Project.eFingo.Models.<#= ClassName #>
         /// </summary>
          public string Guid { get; set; }
 
-    <# foreach (Item item in Items)
-       { #>
-    /// <summary>
+<#      foreach (Item item in PropertyItems) { #>
+
+<#      if(item.Type == "Treelist"){ #>
+        /// <summary>
+        /// <#= item.DisplayName #> 
+        /// </summary>
+        public List<<#=ChildClassName#>>  <#= item.ItemName #>s { get; set; }
+<#      } else { #>
+        /// <summary>
         /// <#= item.DisplayName #> 
         /// </summary>
         public string  <#= item.ItemName #> { get; set; }
-    <# } 
-    #>
+<#      }}#>
 
 
-           <#    if(!string.IsNullOrEmpty(ChildDisplayName))
-       { #>
+ <#    if(!string.IsNullOrEmpty(ChildDisplayName)){ #>
         /// <summary>
         /// <#= ChildDisplayName #> 
         /// </summary>
         public IEnumerable<<#= ChildClassName #>Item> <#= ChildClassName #>Items { get; set; }
-         <# } 
-    #>
+<# } #>
 
         /// <summary>
         /// DatasourceItem本體
@@ -75,37 +76,30 @@ namespace E.SunBank.Project.eFingo.Models.<#= ClassName #>
         /// <param name="item"></param>
         public <#= ClassName #>Item(Item item)
         {
-            <# foreach (Item item in Items)
+<#          foreach (Item item in PropertyItems)
             {
-            if(item.Type == "Image")
-            {#>
-              this.<#= item.ItemName #> = item.ImageUrl(<#= ClassName #>Template.FieldIDList.<#= item.ItemName #>);
-             <# }
-                else if(item.Type == "Multi-Line Text")
-             { #>
-              this.<#= item.ItemName #> =  item.GetMultiLineText(<#= ClassName #>Template.FieldIDList.<#= item.ItemName #>, "<br>").ToHtmlString();
-             <#}
-               else if(item.Type == "Droplink")
-             { #>
-              Item linkItem = item?.TargetItem(<#= ClassName #>Template.FieldIDList.<#= item.ItemName #>);
-                if (linkItem != null)
-                {
-                    //此處需修改ID
-                    this.<#= item.ItemName #>  = linkItem[<#= ClassName #>Template.FieldIDList.<#= item.ItemName #>];
-                }
-             <#} 
-             else
-             { #>
-              this.<#= item.ItemName #> = item[<#= ClassName #>Template.FieldIDList.<#= item.ItemName #>];
-             <#} 
+                if(item.Type == "Image")            {#>
+                    this.<#= item.ItemName #> = item.ImageUrl(<#= ClassName #>Template.<#= item.ItemName #>);
+<#              }else if(item.Type == "Multi-Line Text"){ #>
+                    this.<#= item.ItemName #> =  item.GetMultiLineText(<#= ClassName #>Template.<#= item.ItemName #>, "<br>").ToHtmlString();
+<#              } else if(item.Type == "Droplink"){ #>
+                    Item link<#= item.ItemName #>Item = item?.TargetItem(<#= ClassName #>Template.<#= item.ItemName #>);
+                    if (link<#= item.ItemName #>Item != null)
+                    {
+                        this.<#= item.ItemName #>  = link<#= item.ItemName #>Item[<#= ClassName #>Template.<#= item.LinkItemName #>];
+                    }
+<#              } else if(item.Type == "Treelist") { #>
+                    Sitecore.Data.Fields.MultilistField multiselectField = item.Fields[<#= ClassName #>Template.<#= item.ItemName #>];
+                this.<#= item.ItemName #>s = multiselectField.GetItems().Select(b => new <#=ChildClassName#>(b)).ToList();
+<#              } else { #>
+                    this.<#= item.ItemName #> = item[<#= ClassName #>Template.<#= item.ItemName #>];
+<#              } 
             }#>
 
 
-                <#    if(!string.IsNullOrEmpty(ChildClassName))
-       { #>
+<#          if(!string.IsNullOrEmpty(ChildClassName)){ #>
             this.<#= ChildClassName #>Items = item.GetChildren(<#= ClassName #>Template.FieldIDList.<#= ChildClassName #>ID).Select(j => new <#= ChildClassName #>Item(j)).ToList();
-             <# } 
-    #>
+<#          } #>
 
             this.Guid = item.ID.ToString();
             this.DataItem = item;
@@ -114,36 +108,30 @@ namespace E.SunBank.Project.eFingo.Models.<#= ClassName #>
 
     public class <#= ClassName #>Template
     {
-        public class FieldIDList
-        {
-        <# foreach (Item item in Items)
-            { #>
-    /// <summary>
-            /// <#= item.DisplayName #> 
-            /// </summary>
-            public static readonly ID <#= item.ItemName #> = new ID("{<#= item.ItemID #>}");
-                           <#    if(!string.IsNullOrEmpty(ChildClassName))
-       { #>
-              /// <summary>
+<#      foreach (Item item in PropertyItems){ #>
+        /// <summary>
+        /// <#= item.DisplayName #> 
+        /// </summary>
+        public static readonly ID <#= item.ItemName #> = new ID("{<#= item.ItemID #>}");
+<#      if(!string.IsNullOrEmpty(ChildClassName)){ #>
+            /// <summary>
             /// <#= ChildDisplayName #> 
             /// </summary>
             public static readonly ID <#= ChildClassName #>ID = new ID("{<#= ChildID #>}");
-             <# } 
-    #>\
-        <# } 
-        #>
-        }
+<#          } #>
+
+<#          if(item.Type == "Droplink"){ #>
+            /// <summary>
+            /// <#= item.LinkDisplayName #> 
+            /// </summary>
+            public static readonly ID <#= item.LinkItemName #> = new ID("{<#= item.LinkItemID #>}");
+<#          }
+        } #>
     }
 }
 
-
-
-
-
-
-
 <#+
-public List<Item> Items { get; set; }
+public List<Item> PropertyItems { get; set; }
 public string ClassName { get; set; }
 public string DisplayName { get; set; }
 public string ChildClassName { get; set; }
